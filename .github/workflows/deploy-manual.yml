@@ -1,0 +1,52 @@
+name: Deploy (Manual Approval)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.5.0
+      - name: Terraform Init & Plan
+        run: |
+          cd terraform
+          terraform init
+          terraform plan -var="project_prefix=triggerforge" -out=tfplan
+      - name: Upload Plan
+        uses: actions/upload-artifact@v4
+        with:
+          name: tfplan
+          path: terraform/tfplan
+
+  apply:
+    needs: plan
+    runs-on: ubuntu-latest
+    # human approval gate
+    environment:
+      name: production
+      url: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+    steps:
+      - name: Wait for approval
+        uses: alexjurkiewicz/wait-for-approval@v1
+        with:
+          approvers: 'your-github-username'   # 수정: 승인자 지정
+      - uses: actions/checkout@v4
+      - name: Download Plan
+        uses: actions/download-artifact@v4
+        with:
+          name: tfplan
+          path: terraform
+      - name: Terraform Apply
+        run: |
+          cd terraform
+          terraform apply -auto-approve tfplan
+      - name: SAM Deploy (example)
+        run: |
+          cd serverless
+          sam build
+          sam deploy --stack-name triggerforge-stack --capabilities CAPABILITY_IAM --parameter-overrides ImageQueue=${{ secrets.IMAGE_QUEUE_ARN }} UploadsBucket=${{ secrets.UPLOADS_BUCKET }}

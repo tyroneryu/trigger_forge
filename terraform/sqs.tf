@@ -1,4 +1,3 @@
-# terraform/sqs.tf
 resource "aws_sqs_queue" "dlq" {
   name                      = "${var.project_prefix}-image-dlq"
   message_retention_seconds = 1209600 # 14 days

@@ -1,0 +1,42 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+
+Parameters:
+  UploadsBucket:
+    Type: String
+  ImageQueue:
+    Type: String
+
+Resources:
+  ImageWorkerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: triggerforge-image-worker
+      Runtime: python3.10
+      Handler: worker.lambda_handler
+      CodeUri: lambda_function_worker/
+      MemorySize: 512
+      Timeout: 120
+      Environment:
+        Variables:
+          THUMB_PREFIX: "thumbnails/"
+          THUMB_SIZE: "256"
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - Statement:
+            - Effect: Allow
+              Action:
+                - s3:GetObject
+                - s3:PutObject
+              Resource:
+                - !Sub arn:aws:s3:::${UploadsBucket}/*
+      Events:
+        ImageQueueEvent:
+          Type: SQS
+          Properties:
+            Queue: !Ref ImageQueue
+
+Outputs:
+  ImageWorkerFunctionName:
+    Value: !GetAtt ImageWorkerFunction.Arn
+  YML

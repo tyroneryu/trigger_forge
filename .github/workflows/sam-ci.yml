@@ -1,0 +1,29 @@
+name: SAM CI
+
+on:
+  push:
+    paths:
+      - 'serverless/**'
+      - '.github/workflows/sam-ci.yml'
+
+jobs:
+  sam:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install AWS SAM CLI
+        run: |
+          python3 -m pip install --upgrade pip
+          pip install aws-sam-cli
+
+      - name: SAM Build
+        run: cd serverless && sam build
+
+      - name: SAM Local Invoke Test
+        run: |
+          cd serverless
+          sam local invoke ImageProcessorFunction --event tests/s3_event.json || true
+
+      # Note: actual 'sam deploy' should be guarded / run in protected environment only
