@@ -1,0 +1,15 @@
+{
+  "Records": [
+    {
+      "eventVersion": "2.1",
+      "eventSource": "aws:s3",
+      "awsRegion": "ap-northeast-2",a
+      "eventTime": "2025-01-01T00:00:00.000Z",
+      "eventName": "ObjectCreated:Put",
+      "s3": {
+        "bucket": { "name": "example-bucket" },
+        "object": { "key": "uploads/example.jpg", "size": 1024 }
+      }
+    }
+  ]
+}

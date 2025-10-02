@@ -1,0 +1,28 @@
+- hosts: web
+become: yes
+tasks:
+  - name: Ensure python3 exists (Debian/Ubuntu)
+apt:
+name: python3
+state: present
+when: ansible_os_family == "Debian"
+
+
+  - name: Install nginx (Debian)
+apt:
+name: nginx
+state: present
+when: ansible_os_family == "Debian"
+
+
+  - name: Start nginx
+service:
+name: nginx
+state: started
+enabled: yes
+
+
+  - name: Deploy simple HTML
+copy:
+dest: /var/www/html/index.html
+content: "<h1>DevOps Portfolio - Management UI</h1><p>Healthy</p>"

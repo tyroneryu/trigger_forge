@@ -1,0 +1,41 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Serverless S3 -> Lambda demo
+
+
+Globals:
+Function:
+Timeout: 30
+
+
+Resources:
+UploadsBucket:
+Type: AWS::S3::Bucket
+Properties:
+BucketName: !Sub ${AWS::StackName}-uploads
+VersioningConfiguration:
+Status: Enabled
+
+
+ImageProcessorFunction:
+Type: AWS::Serverless::Function
+Properties:
+FunctionName: devops-portfolio-image-processor
+Runtime: python3.10
+Handler: app.lambda_handler
+CodeUri: lambda_function/
+MemorySize: 256
+Policies:
+  - AWSLambdaBasicExecutionRole
+Events:
+S3Upload:
+Type: S3
+Properties:
+Bucket: !Ref UploadsBucket
+Events: s3:ObjectCreated:*
+
+
+Outputs:
+UploadsBucketName:
+Description: "Name of the uploads bucket"
+Value: !Ref UploadsBucket
