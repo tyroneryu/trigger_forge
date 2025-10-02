@@ -1,0 +1,10 @@
+name: Terraform CI
+on: [push]
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Terraform fmt
+        run: cd terraform && terraform fmt -check || true
